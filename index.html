@@ -10,12 +10,13 @@
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </head>
 <body class="h-full bg-slate-900 text-slate-100">
+  <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black/60 hidden lg:hidden" onclick="toggleSidebar()"></div>
   <div id="app" class="flex h-full overflow-hidden">
     <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
-      <div class="px-5 py-4 border-b border-slate-800"><div class="font-semibold">Fleet Tracker</div><div class="text-xs text-slate-400">Sign-in required</div></div>
+      <div class="px-5 py-4 border-b border-slate-800"><div class="font-semibold">Fleet Tracker</div><div class="text-xs text-slate-400">Signed in</div></div>
       <div class="px-4 py-3"><select id="asset-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm" onchange="switchAsset(this.value)"></select></div>
-      <nav class="px-3 space-y-1">
-        <button data-view="garage" class="nav-btn" onclick="showView('garage')">Garage</button>
+      <nav class="px-3 space-y-1 flex-1">
+        <button data-view="garage" class="nav-btn active" onclick="showView('garage')">Garage</button>
         <button data-view="dashboard" class="nav-btn" onclick="showView('dashboard')">Dashboard</button>
         <button data-view="service" class="nav-btn" onclick="showView('service')">Service</button>
         <button data-view="fuel" class="nav-btn" onclick="showView('fuel')">Fuel</button>
@@ -25,9 +26,10 @@
         <button data-view="tools" class="nav-btn" onclick="showView('tools')">Tools</button>
         <button class="nav-btn" onclick="openNewAccountForm()">New account</button>
       </nav>
+      <button class="m-3 btn-secondary" onclick="sessionStorage.removeItem('ft_token'); location.reload();">Sign out</button>
     </aside>
     <div class="flex-1 flex flex-col min-w-0">
-      <header class="px-4 py-3 border-b border-slate-800"><h1 id="view-title">Garage</h1><p id="view-subtitle"></p><span id="asset-status-badge"></span></header>
+      <header class="px-4 py-3 border-b border-slate-800"><h1 id="view-title">Garage</h1><p id="view-subtitle" class="text-xs text-slate-400"></p><span id="asset-status-badge" class="status-badge"></span></header>
       <main id="main-content" class="flex-1 overflow-y-auto p-4"></main>
     </div>
   </div>
