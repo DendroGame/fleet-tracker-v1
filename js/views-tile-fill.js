@@ -1,11 +1,10 @@
-/* Visible tiles fill the row. Drag one onto another to reorder. */
+/* Every dashboard card can be dragged. Visible ones fill the width. */
 let draggingTile = false;
-function isSummaryTile(card) {
-  const label = (card.querySelector('.uppercase, .text-xs')?.textContent || '').trim().toLowerCase();
-  return ['status', 'odometer', 'hours', 'open reminders', 'service cost', 'fuel spend', 'fuel cost', 'avg mpg', 'mpg'].includes(label);
-}
 function tileKey(card) {
-  return card.dataset.tile || (card.querySelector('.uppercase, .text-xs')?.textContent || '').trim().toLowerCase();
+  if (card.dataset.tile) return card.dataset.tile;
+  const label = (card.querySelector('h3, .uppercase, .text-sm, .text-xs')?.textContent || card.textContent || '').trim().toLowerCase().slice(0, 24);
+  card.dataset.tile = label.replace(/\s+/g, '-');
+  return card.dataset.tile;
 }
 function fillLeftToRight() {
   if (draggingTile) return;
@@ -14,7 +13,7 @@ function fillLeftToRight() {
   const asset = typeof currentAsset === 'function' ? currentAsset() : null;
   const settings = asset && typeof readAssetSettings === 'function' ? readAssetSettings(asset) : {};
   const order = settings.order || [];
-  const cards = [...main.querySelectorAll('.card')].filter(isSummaryTile).filter(card => settings[card.dataset.tile] !== false);
+  const cards = [...main.querySelectorAll('.card')].filter(card => card.id !== 'dash-tile-grid' && settings[card.dataset.tile] !== false);
   cards.sort((a, b) => {
     const ia = order.indexOf(tileKey(a));
     const ib = order.indexOf(tileKey(b));
@@ -30,18 +29,22 @@ function fillLeftToRight() {
   if (heading) heading.after(grid);
   else main.prepend(grid);
   const mobile = window.innerWidth < 900;
-  grid.style.cssText = `display:grid;width:100%;gap:16px;margin:12px 0 24px;grid-template-columns:repeat(${mobile ? 2 : Math.min(cards.length, 4)}, minmax(0, 1fr));`;
+  grid.style.cssText = `display:grid;width:100%;gap:16px;margin:12px 0 24px;grid-template-columns:repeat(${mobile ? 1 : 2}, minmax(0, 1fr));`;
   cards.forEach(card => {
     grid.appendChild(card);
     card.draggable = true;
     card.style.cursor = 'grab';
-    card.ondragstart = () => { draggingTile = true; card.dataset.drag = tileKey(card); };
+    card.ondragstart = (e) => {
+      draggingTile = true;
+      e.dataTransfer.setData('text/plain', tileKey(card));
+    };
     card.ondragend = () => { draggingTile = false; };
     card.ondragover = (e) => e.preventDefault();
     card.ondrop = async (e) => {
       e.preventDefault();
       draggingTile = false;
-      const from = [...grid.children].find(el => tileKey(el) === e.dataTransfer.getData('text/plain') || el.dataset.drag);
+      const key = e.dataTransfer.getData('text/plain');
+      const from = [...grid.children].find(el => tileKey(el) === key);
       if (from && from !== card) grid.insertBefore(from, card);
       if (!asset) return;
       const next = readAssetSettings(asset);
@@ -49,11 +52,6 @@ function fillLeftToRight() {
       asset.notes = notesWithSettings(asset, next);
       try { await updateAsset(asset.id, asset); } catch (err) {}
       toast('Tile order saved');
-    };
-    card.ondragstart = (e) => {
-      draggingTile = true;
-      card.dataset.drag = tileKey(card);
-      e.dataTransfer.setData('text/plain', tileKey(card));
     };
   });
 }
