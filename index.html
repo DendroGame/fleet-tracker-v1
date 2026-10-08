@@ -10,12 +10,12 @@
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </head>
 <body class="h-full bg-slate-900 text-slate-100">
-  <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black/60 hidden lg:hidden" onclick="toggleSidebar()"></div>
+  <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black/60 hidden" onclick="toggleSidebar()"></div>
   <div id="app" class="flex h-full overflow-hidden">
-    <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
-      <div class="px-5 py-4 border-b border-slate-800"><div class="font-semibold">Fleet Tracker</div><div class="text-xs text-slate-400">Signed in</div></div>
-      <div class="px-4 py-3"><select id="asset-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm" onchange="switchAsset(this.value)"></select></div>
-      <nav class="px-3 space-y-1 flex-1">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 border-r border-slate-800 flex flex-col -translate-x-full md:static md:translate-x-0">
+      <div class="px-5 py-4 border-b border-slate-800"><div class="font-semibold">Fleet Tracker</div><div class="text-xs text-slate-400">v1.3</div></div>
+      <div class="px-4 py-3"><label class="text-xs text-slate-500">Active asset</label><select id="asset-select" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm" onchange="switchAsset(this.value)"></select></div>
+      <nav class="px-3 space-y-1 flex-1 overflow-y-auto">
         <button data-view="garage" class="nav-btn active" onclick="showView('garage')">Garage</button>
         <button data-view="dashboard" class="nav-btn" onclick="showView('dashboard')">Dashboard</button>
         <button data-view="service" class="nav-btn" onclick="showView('service')">Service</button>
@@ -29,7 +29,11 @@
       <button class="m-3 btn-secondary" onclick="sessionStorage.removeItem('ft_token'); location.reload();">Sign out</button>
     </aside>
     <div class="flex-1 flex flex-col min-w-0">
-      <header class="px-4 py-3 border-b border-slate-800"><h1 id="view-title">Garage</h1><p id="view-subtitle" class="text-xs text-slate-400"></p><span id="asset-status-badge" class="status-badge"></span></header>
+      <header class="px-4 py-3 border-b border-slate-800 flex items-center gap-3">
+        <button class="md:hidden px-3 py-2 rounded-lg bg-slate-800" onclick="toggleSidebar()">Menu</button>
+        <div><h1 id="view-title">Garage</h1><p id="view-subtitle" class="text-xs text-slate-400"></p></div>
+        <span id="asset-status-badge" class="status-badge ml-auto"></span>
+      </header>
       <main id="main-content" class="flex-1 overflow-y-auto p-4"></main>
     </div>
   </div>
