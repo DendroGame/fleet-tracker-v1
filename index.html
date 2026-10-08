@@ -14,11 +14,7 @@
   <div id="app" class="flex h-full overflow-hidden">
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 border-r border-slate-800 flex flex-col -translate-x-full md:static md:translate-x-0">
       <div class="px-5 py-4 border-b border-slate-800"><div class="font-semibold">Fleet Tracker</div><div class="text-xs text-slate-400">v1.3</div></div>
-      <div class="px-4 py-3 border-b border-slate-800">
-        <div class="text-xs text-slate-500 uppercase">Now selected</div>
-        <div id="now-selected" class="mt-1">None</div>
-        <select id="asset-select" class="hidden" onchange="switchAsset(this.value)"></select>
-      </div>
+      <div class="px-4 py-3 border-b border-slate-800"><div class="text-xs text-slate-500 uppercase">Now selected</div><div id="now-selected" class="mt-1">None</div><select id="asset-select" class="hidden" onchange="switchAsset(this.value)"></select></div>
       <nav class="px-3 py-3 space-y-1 flex-1 overflow-y-auto">
         <button data-view="garage" class="nav-btn active" onclick="showView('garage')">Garage</button>
         <button data-view="dashboard" class="nav-btn" onclick="showView('dashboard')">Dashboard</button>
@@ -39,11 +35,7 @@
       </div>
     </aside>
     <div class="flex-1 flex flex-col min-w-0">
-      <header class="px-4 py-3 border-b border-slate-800 flex items-center gap-3">
-        <button class="md:hidden px-3 py-2 rounded-lg bg-slate-800" onclick="toggleSidebar()">Menu</button>
-        <div><h1 id="view-title">Garage</h1><p id="view-subtitle" class="text-xs text-slate-400"></p></div>
-        <span id="asset-status-badge" class="status-badge ml-auto"></span>
-      </header>
+      <header class="px-4 py-3 border-b border-slate-800 flex items-center gap-3"><button class="md:hidden px-3 py-2 rounded-lg bg-slate-800" onclick="toggleSidebar()">Menu</button><div><h1 id="view-title">Garage</h1><p id="view-subtitle" class="text-xs text-slate-400"></p></div><span id="asset-status-badge" class="status-badge ml-auto"></span></header>
       <main id="main-content" class="flex-1 overflow-y-auto p-4"></main>
     </div>
   </div>
@@ -80,5 +72,6 @@
   <script src="js/views-repairs.js"></script>
   <script src="js/views-asset-settings.js"></script>
   <script src="js/views-reviewed.js"></script>
+  <script src="js/views-hide-hours.js"></script>
 </body>
 </html>
