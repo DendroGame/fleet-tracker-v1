@@ -2,51 +2,39 @@
 <html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Fleet Tracker v1.2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fleet Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/app.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 </head>
-<body class="h-full bg-slate-900 text-slate-100 antialiased">
+<body class="h-full bg-slate-900 text-slate-100">
   <div id="app" class="flex h-full overflow-hidden">
-    <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black/60 hidden lg:hidden" onclick="toggleSidebar()"></div>
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 border-r border-slate-800 transform -translate-x-full lg:translate-x-0 lg:static lg:flex flex-col">
-      <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-800">
-        <div class="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-lg">FT</div>
-        <div>
-          <div class="font-semibold text-sm">Fleet Tracker</div>
-          <div class="text-xs text-slate-400">v1.2 · photos</div>
-        </div>
-      </div>
-      <div class="px-4 py-3 border-b border-slate-800">
-        <label class="text-xs text-slate-500 uppercase">Active Asset</label>
-        <select id="asset-select" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm" onchange="switchAsset(this.value)"></select>
-      </div>
-      <nav class="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
-        <button data-view="garage" class="nav-btn active" onclick="showView('garage')">Garage</button>
+    <aside id="sidebar" class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
+      <div class="px-5 py-4 border-b border-slate-800"><div class="font-semibold">Fleet Tracker</div><div class="text-xs text-slate-400">Sign-in required</div></div>
+      <div class="px-4 py-3"><select id="asset-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm" onchange="switchAsset(this.value)"></select></div>
+      <nav class="px-3 space-y-1">
+        <button data-view="garage" class="nav-btn" onclick="showView('garage')">Garage</button>
         <button data-view="dashboard" class="nav-btn" onclick="showView('dashboard')">Dashboard</button>
-        <button data-view="service" class="nav-btn" onclick="showView('service')">Service Records</button>
+        <button data-view="service" class="nav-btn" onclick="showView('service')">Service</button>
         <button data-view="fuel" class="nav-btn" onclick="showView('fuel')">Fuel</button>
         <button data-view="supplies" class="nav-btn" onclick="showView('supplies')">Supplies</button>
         <button data-view="inspections" class="nav-btn" onclick="showView('inspections')">Inspections</button>
         <button data-view="reminders" class="nav-btn" onclick="showView('reminders')">Reminders</button>
         <button data-view="tools" class="nav-btn" onclick="showView('tools')">Tools</button>
+        <button class="nav-btn" onclick="openNewAccountForm()">New account</button>
       </nav>
     </aside>
-    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-      <header class="flex items-center gap-3 px-4 py-3 bg-slate-950/80 border-b border-slate-800">
-        <button class="lg:hidden p-2" onclick="toggleSidebar()">Menu</button>
-        <div><h1 id="view-title" class="text-lg font-semibold">Garage</h1><p id="view-subtitle" class="text-xs text-slate-400"></p></div>
-        <div class="ml-auto"><button onclick="exportData()" class="btn-secondary text-sm">Export</button> <span id="asset-status-badge" class="status-badge status-healthy"></span></div>
-      </header>
-      <main id="main-content" class="flex-1 overflow-y-auto p-4 sm:p-6"></main>
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="px-4 py-3 border-b border-slate-800"><h1 id="view-title">Garage</h1><p id="view-subtitle"></p><span id="asset-status-badge"></span></header>
+      <main id="main-content" class="flex-1 overflow-y-auto p-4"></main>
     </div>
   </div>
   <div id="modal-root" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4"><div class="absolute inset-0 bg-black/70" onclick="closeModal()"></div><div id="modal-content" class="relative bg-slate-900 border border-slate-700 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"></div></div>
   <div id="toast" class="fixed bottom-4 right-4 z-[70] hidden"></div>
   <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/api-crud.js"></script>
   <script src="js/core.js"></script>
   <script src="js/views-garage-dashboard.js"></script>
