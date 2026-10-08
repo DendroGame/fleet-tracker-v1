@@ -1,5 +1,5 @@
 const TILE_OPTS = [
-  ['state', 'State'],
+  ['state', 'State of operation'],
   ['cost', 'Cost per mile or hour'],
   ['mpg', 'Average MPG'],
   ['fuelBtn', 'Add fuel button'],
@@ -19,7 +19,7 @@ function renderDashboardSettings(el) {
   const mode = localStorage.getItem('ft_tile_primary') || 'model';
   el.innerHTML = `
     <h2 class="text-lg font-semibold mb-2">Dashboard display</h2>
-    <p class="text-sm text-slate-400 mb-4">Same choices on desktop and mobile. Picture display is set on each asset in Edit Asset.</p>
+    <p class="text-sm text-slate-400 mb-4">Same choices on desktop and mobile. Chart settings are saved on each vehicle from its dashboard.</p>
     <div class="card space-y-3 text-sm mb-4">
       <div class="font-medium">Tile title</div>
       <label class="flex items-center gap-2"><input type="radio" name="tile" ${mode==='model'?'checked':''} onchange="setTileMode('model')"> Model large, unit small</label>
