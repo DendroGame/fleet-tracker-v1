@@ -1,5 +1,5 @@
 /**
- * Fleet Tracker v1.0 — Data Layer (Cloudflare API)
+ * Fleet Tracker v1.1 — Data Layer (Cloudflare API)
  * Talks to the Worker instead of localStorage
  */
 
@@ -30,7 +30,7 @@ function formatNumber(n) {
   return new Intl.NumberFormat('en-US').format(n || 0);
 }
 
-// ─── Normalize API → Frontend shape ──────────────────────────
+// ─── Normalize API → Frontend shape ─────────────────────────
 function normAsset(a) {
   return {
     id: a.id,
@@ -130,7 +130,7 @@ async function loadAllData() {
   ]);
 
   return {
-    version: '1.0.0',
+    version: '1.1.0',
     currentAssetId: assets[0]?.id || null,
     assets,
     serviceRecords,
