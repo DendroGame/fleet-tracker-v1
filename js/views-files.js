@@ -12,7 +12,7 @@ async function uploadAttachment(form, category, recordId) {
   const file = form.querySelector('input[name="attachment"]')?.files?.[0];
   if (!file) return null;
   const asset = typeof currentAsset === 'function' ? currentAsset() : null;
-  const unit = asset?.unitNumber || 'UNASSIGNED';
+  const unit = (asset && asset.unitNumber) ? asset.unitNumber : 'Shop';
   const data = await fileToBase64(file);
   toast('Uploading file…');
   return api('/api/files', {
@@ -28,46 +28,23 @@ async function uploadAttachment(form, category, recordId) {
   });
 }
 
-const _openFuel = openFuelForm;
-openFuelForm = function (id) {
-  _openFuel(id);
-  addFileField('File (saved to Unit#/Fuel/)');
-};
-const _saveFuel = saveFuel;
-saveFuel = async function (e, id) {
-  await _saveFuel(e, id);
-  try { await uploadAttachment(e.target, 'Fuel', id || null); } catch (err) { toast('File upload failed: ' + err.message, 'err'); }
-};
+function hookForm(openName, saveName, category, label) {
+  const openFn = window[openName];
+  const saveFn = window[saveName];
+  if (typeof openFn !== 'function' || typeof saveFn !== 'function') return;
+  window[openName] = function () {
+    openFn.apply(this, arguments);
+    addFileField(label);
+  };
+  window[saveName] = async function (e) {
+    await saveFn.apply(this, arguments);
+    try { await uploadAttachment(e.target, category, arguments[1] || null); }
+    catch (err) { toast('File upload failed: ' + err.message, 'err'); }
+  };
+}
 
-const _openInsp = openInspectionForm;
-openInspectionForm = function () {
-  _openInsp();
-  addFileField('File (saved to Unit#/Inspections/)');
-};
-const _saveInsp = saveInspection;
-saveInspection = async function (e) {
-  await _saveInsp(e);
-  try { await uploadAttachment(e.target, 'Inspections', null); } catch (err) { toast('File upload failed: ' + err.message, 'err'); }
-};
-
-const _openAsset = openAssetForm;
-openAssetForm = function (id) {
-  _openAsset(id);
-  addFileField('File (saved to Unit#/Garage/)');
-};
-const _saveAsset = saveAsset;
-saveAsset = async function (e, id) {
-  await _saveAsset(e, id);
-  try { await uploadAttachment(e.target, 'Garage', id || null); } catch (err) { toast('File upload failed: ' + err.message, 'err'); }
-};
-
-const _openRem = openReminderForm;
-openReminderForm = function () {
-  _openRem();
-  addFileField('File (saved to Unit#/Reminders/)');
-};
-const _saveRem = saveReminder;
-saveReminder = async function (e) {
-  await _saveRem(e);
-  try { await uploadAttachment(e.target, 'Reminders', null); } catch (err) { toast('File upload failed: ' + err.message, 'err'); }
-};
+hookForm('openServiceForm', 'saveService', 'Service', 'File (saved to Unit#/Service/)');
+hookForm('openFuelForm', 'saveFuel', 'Fuel', 'File (saved to Unit#/Fuel/)');
+hookForm('openSupplyForm', 'saveSupply', 'Supplies', 'File (saved to Unit#/Supplies/)');
+hookForm('openInspectionForm', 'saveInspection', 'Inspections', 'File (saved to Unit#/Inspections/)');
+hookForm('openToolForm', 'saveTool', 'Tools', 'File (saved to Unit#/Tools/)');
