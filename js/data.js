@@ -3,7 +3,7 @@
  * Talks to the Worker instead of localStorage
  */
 
-const API_BASE = 'https://super-disk-c840.jonathans-lubelogger-api.workers.dev';
+const API_BASE = 'https://fleet-tracker-backend-api.jonathans-lubelogger-api.workers.dev';
 
 // ─── Helpers ───────────────────────────────────────────────
 async function api(path, options = {}) {
