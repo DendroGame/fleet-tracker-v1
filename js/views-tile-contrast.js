@@ -8,11 +8,19 @@ function applyContrast() {
   if (document.getElementById('view-title')?.textContent !== 'Garage') return;
   (state.assets || []).forEach((a, i) => {
     const card = document.querySelectorAll('#main-content .card')[i];
-    const photo = card?.querySelector('.tile-photo');
-    if (!card || !photo || photo.style.width === '40px') return;
+    if (!card) return;
+    const photo = card.querySelector('.tile-photo');
     const amount = contrastValue(a);
-    photo.style.opacity = String(Math.max(0.15, 1 - amount / 40));
-    card.style.textShadow = amount > 8 ? '0 1px 2px #000' : 'none';
+    const fade = String(Math.max(0.2, 1 - amount / 40));
+    if (photo && photo.style.width !== '40px') {
+      photo.style.opacity = fade;
+      photo.style.zIndex = '0';
+      photo.style.pointerEvents = 'none';
+      [...card.children].forEach(child => {
+        if (child !== photo) { child.style.position = 'relative'; child.style.zIndex = '1'; }
+      });
+    }
+    if (card.style.backgroundImage) card.style.backgroundColor = 'rgba(15,23,42,' + (amount / 40) + ')';
   });
 }
 function addContrastSlider() {
