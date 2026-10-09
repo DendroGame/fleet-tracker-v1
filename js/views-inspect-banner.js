@@ -5,7 +5,7 @@ function latestInspection() {
 }
 function problemLine(inspection) {
   if (!inspection?.notes) return '';
-  return inspection.notes.split('\n').filter(line => line.includes(':') && !/odometer/i.test(line) && !/: Good$/i.test(line)).map(line => {
+  return inspection.notes.split('\n').filter(line => line.includes(':') && !/odometer/i.test(line) && !/: Good$/i.test(line) && !/undefined/i.test(line)).map(line => {
     const [item, result] = line.split(':');
     return item.trim() + ' ' + result.trim().toLowerCase();
   }).join(', ');
@@ -24,18 +24,35 @@ function inspectionBanner() {
   }
   bar.textContent = text;
 }
-function listInspectionOdo() {
+function oneInspectionList() {
+  document.querySelectorAll('.odo-list').forEach(el => el.remove());
   if (document.getElementById('view-title')?.textContent !== 'Inspections') return;
-  const el = document.getElementById('main-content');
-  if (!el || el.querySelector('.odo-list')) return;
-  const asset = currentAsset();
-  const rows = (state.inspections || []).filter(r => !asset || r.assetId === asset.id);
-  const box = document.createElement('div');
-  box.className = 'odo-list mt-4 space-y-2';
-  box.innerHTML = rows.map(r => {
-    const odo = (String(r.notes || '').match(/Odometer: (\d+)/) || [])[1] || 'No reading';
-    return `<div class="card flex items-center justify-between"><div><div class="font-medium">${r.template || 'Inspection'} · ${r.result || ''}</div><div class="text-sm text-slate-400">${r.date || ''} · ${odo} mi</div></div><button class="btn-danger text-xs" onclick="deleteInspection('${r.id}')">Delete</button></div>`;
-  }).join('') || '<p class="text-sm text-slate-400">No inspections yet</p>';
-  el.appendChild(box);
+  document.querySelectorAll('#main-content .card').forEach(card => {
+    if (card.querySelector('.form-select, .insp-del')) return;
+    const title = card.textContent || '';
+    const match = (state.inspections || []).find(r => title.includes(r.date || 'no-date') && title.includes(r.result || ''));
+    if (!match) return;
+    const odo = (String(match.notes || '').match(/Odometer:\s*(\d+)/i) || [])[1];
+    if (odo && !card.querySelector('.odo-line')) {
+      const line = document.createElement('div');
+      line.className = 'odo-line text-sm text-slate-400';
+      line.textContent = odo + ' mi';
+      card.appendChild(line);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'btn-danger text-xs insp-del mt-2';
+    btn.textContent = 'Delete';
+    btn.onclick = () => deleteInspection(match.id);
+    card.appendChild(btn);
+  });
 }
-setInterval(() => { inspectionBanner(); listInspectionOdo(); }, 800);
+function yellowPending() {
+  document.querySelectorAll('#main-content .card span, .status-badge').forEach(el => {
+    if (!/inspection pending/i.test(el.textContent || '')) return;
+    el.style.background = '#eab308';
+    el.style.color = '#1c1917';
+    el.style.borderRadius = '999px';
+    el.style.padding = '2px 8px';
+  });
+}
+setInterval(() => { inspectionBanner(); oneInspectionList(); yellowPending(); }, 800);
