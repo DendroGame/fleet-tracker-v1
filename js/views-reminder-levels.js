@@ -9,7 +9,6 @@ function editReminder(id) {
   if (!r) return;
   const notes = r.notes || '';
   const mode = noteVal(notes, 'mode', 'either');
-  const unit = noteVal(notes, 'repeatUnit', 'month');
   openModal(`<div class="p-5"><h2 class="font-semibold mb-3">Edit reminder</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="space-y-3">
@@ -29,15 +28,11 @@ function editReminder(id) {
           <option value="either" ${mode==='either'?'selected':''}>Whichever comes first</option>
         </select>
         <label class="flex items-center gap-2 text-sm"><input id="rem-recur" type="checkbox" ${/recur:yes/.test(notes)?'checked':''}> Recurring</label>
-        <label class="form-label">Repeat every</label><input id="rem-every" class="form-input" value="${noteVal(notes, 'every', '1')}">
-        <label class="form-label">Repeat unit</label>
-        <select id="rem-unit" class="form-select">
-          <option value="month" ${unit==='month'?'selected':''}>Month</option>
-          <option value="year" ${unit==='year'?'selected':''}>Year</option>
-          <option value="date" ${unit==='date'?'selected':''}>Date</option>
-        </select>
+        <label class="form-label">Every miles</label><input id="rem-miles" type="number" class="form-input" value="${noteVal(notes, 'everyMiles', '')}" placeholder="2000">
+        <label class="form-label">Every months</label><input id="rem-months" type="number" class="form-input" value="${noteVal(notes, 'everyMonths', '')}" placeholder="1">
       </div>
     </div>
+    <p class="text-xs text-slate-400 mt-3">Fill miles, months, or both. Both means whichever comes first. Example: car wash every 2000 miles or every 1 month.</p>
     <button class="btn-primary mt-4" onclick="saveReminderEdit('${id}')">Save</button></div>`);
 }
 async function saveReminderEdit(id) {
@@ -52,8 +47,8 @@ async function saveReminderEdit(id) {
     'urgentMi:' + document.getElementById('rem-urg-mi').value,
     'mode:' + document.getElementById('rem-mode').value,
     'recur:' + (document.getElementById('rem-recur').checked ? 'yes' : 'no'),
-    'every:' + document.getElementById('rem-every').value,
-    'repeatUnit:' + document.getElementById('rem-unit').value
+    'everyMiles:' + document.getElementById('rem-miles').value,
+    'everyMonths:' + document.getElementById('rem-months').value
   ].join('\n');
   await updateReminder(id, r);
   closeModal();
