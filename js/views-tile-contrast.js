@@ -1,6 +1,7 @@
 function contrastValue(asset) {
   const found = (String(asset?.notes || '').match(/__contrast__:([^\n]+)/) || [])[1];
-  return found === undefined ? 40 : Number(found);
+  const n = found === undefined ? 16 : Number(found);
+  return Math.min(40, Math.max(0, n));
 }
 function applyContrast() {
   document.querySelectorAll('.tile-scrim').forEach(el => el.remove());
@@ -10,8 +11,8 @@ function applyContrast() {
     const photo = card?.querySelector('.tile-photo');
     if (!card || !photo || photo.style.width === '40px') return;
     const amount = contrastValue(a);
-    photo.style.opacity = String(Math.max(0.15, 1 - amount / 100));
-    card.style.textShadow = amount > 20 ? '0 1px 2px #000' : 'none';
+    photo.style.opacity = String(Math.max(0.15, 1 - amount / 40));
+    card.style.textShadow = amount > 8 ? '0 1px 2px #000' : 'none';
   });
 }
 function addContrastSlider() {
@@ -21,7 +22,7 @@ function addContrastSlider() {
   const asset = (state.assets || []).find(a => a.unitNumber === unit);
   const value = contrastValue(asset);
   const row = document.createElement('div');
-  row.innerHTML = `<label class="form-label">Picture contrast <span id="contrast-num">${value}</span></label><input name="tileContrast" type="range" min="0" max="100" value="${value}" class="w-full">`;
+  row.innerHTML = `<label class="form-label">Picture contrast <span id="contrast-num">${value}</span></label><input name="tileContrast" type="range" min="0" max="40" value="${value}" class="w-full">`;
   row.querySelector('input').oninput = (e) => { document.getElementById('contrast-num').textContent = e.target.value; };
   form.insertBefore(row, form.querySelector('.flex.justify-end'));
 }
