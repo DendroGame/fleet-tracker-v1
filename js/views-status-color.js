@@ -1,12 +1,12 @@
 function colorStatus() {
   const colors = {
-    'out of service': ['#dc2626', '#fff'],
-    'inspection pending': ['#eab308', '#1c1917'],
-    'inspection needed': ['#f59e0b', '#1c1917'],
-    'maintenance active': ['#38bdf8', '#0f172a'],
-    'service needed': ['#f97316', '#1c1917'],
-    'sold': ['#64748b', '#fff'],
-    'in service': ['#16a34a', '#fff']
+    'out of service': ['rgba(220,38,38,.35)', '#fecaca'],
+    'inspection pending': ['rgba(234,179,8,.35)', '#fde68a'],
+    'inspection needed': ['rgba(245,158,11,.35)', '#fde68a'],
+    'maintenance active': ['rgba(56,189,248,.35)', '#bae6fd'],
+    'service needed': ['rgba(249,115,22,.35)', '#fed7aa'],
+    'sold': ['rgba(100,116,139,.35)', '#e2e8f0'],
+    'in service': ['rgba(22,163,74,.35)', '#bbf7d0']
   };
   document.querySelectorAll('.status-badge, #main-content .card span').forEach(el => {
     if (el.children.length) return;
