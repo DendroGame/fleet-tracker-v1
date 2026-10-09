@@ -1,21 +1,52 @@
 function hideLevelButton() {
   document.querySelectorAll('.level-btn').forEach(el => el.remove());
 }
+function noteVal(notes, key, fallback) {
+  return (String(notes || '').match(new RegExp(key + ':([^\\n]+)')) || [])[1] || fallback;
+}
 function editReminder(id) {
   const r = (state.reminders || []).find(x => x.id === id);
   if (!r) return;
   const notes = r.notes || '';
-  const up = (notes.match(/upcoming:(\d+)/) || [])[1] || 30;
-  const urg = (notes.match(/urgent:(\d+)/) || [])[1] || 7;
-  openModal(`<div class="p-5 space-y-3"><h2 class="font-semibold">Edit reminder</h2><label class="form-label">Name</label><input id="rem-title" class="form-input" value="${r.title || ''}"><label class="form-label">Due date</label><input id="rem-date" type="date" class="form-input" value="${r.dueDate || ''}"><label class="form-label">Due odometer</label><input id="rem-odo" type="number" class="form-input" value="${r.dueOdometer || ''}"><label class="form-label">Upcoming within days</label><input id="rem-up" type="number" class="form-input" value="${up}"><label class="form-label">Urgent within days</label><input id="rem-urg" type="number" class="form-input" value="${urg}"><label class="form-label">Notes</label><input id="rem-notes" class="form-input" value="${notes.replace(/\n?upcoming:\d+\n?urgent:\d+/g, '')}"><button class="btn-primary" onclick="saveReminderEdit('${id}')">Save</button></div>`);
+  const mode = noteVal(notes, 'mode', 'either');
+  openModal(`<div class="p-5"><h2 class="font-semibold mb-3">Edit reminder</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="space-y-3">
+        <label class="form-label">Name</label><input id="rem-title" class="form-input" value="${r.title || ''}">
+        <label class="form-label">Due date</label><input id="rem-date" type="date" class="form-input" value="${r.dueDate || ''}">
+        <label class="form-label">Due odometer</label><input id="rem-odo" type="number" class="form-input" value="${r.dueOdometer || ''}">
+        <label class="form-label">Upcoming within days</label><input id="rem-up" type="number" class="form-input" value="${noteVal(notes, 'upcoming', '30')}">
+        <label class="form-label">Urgent within days</label><input id="rem-urg" type="number" class="form-input" value="${noteVal(notes, 'urgent', '7')}">
+      </div>
+      <div class="space-y-3">
+        <label class="form-label">Upcoming within miles</label><input id="rem-up-mi" type="number" class="form-input" value="${noteVal(notes, 'upcomingMi', '500')}">
+        <label class="form-label">Urgent within miles</label><input id="rem-urg-mi" type="number" class="form-input" value="${noteVal(notes, 'urgentMi', '100')}">
+        <label class="form-label">Trigger</label>
+        <select id="rem-mode" class="form-select">
+          <option value="date" ${mode==='date'?'selected':''}>Date</option>
+          <option value="odometer" ${mode==='odometer'?'selected':''}>Odometer</option>
+          <option value="either" ${mode==='either'?'selected':''}>Whichever comes first</option>
+        </select>
+        <label class="flex items-center gap-2 text-sm"><input id="rem-recur" type="checkbox" ${/recur:yes/.test(notes)?'checked':''}> Recurring</label>
+        <label class="form-label">Repeat every</label><input id="rem-every" class="form-input" value="${noteVal(notes, 'every', '3000 mi')}" placeholder="3000 mi or 1 year">
+      </div>
+    </div>
+    <button class="btn-primary mt-4" onclick="saveReminderEdit('${id}')">Save</button></div>`);
 }
 async function saveReminderEdit(id) {
   const r = state.reminders.find(x => x.id === id);
   r.title = document.getElementById('rem-title').value;
   r.dueDate = document.getElementById('rem-date').value;
   r.dueOdometer = document.getElementById('rem-odo').value ? +document.getElementById('rem-odo').value : null;
-  const plain = document.getElementById('rem-notes').value.replace(/\n?upcoming:\d+\n?urgent:\d+/g, '');
-  r.notes = plain + '\nupcoming:' + document.getElementById('rem-up').value + '\nurgent:' + document.getElementById('rem-urg').value;
+  r.notes = [
+    'upcoming:' + document.getElementById('rem-up').value,
+    'urgent:' + document.getElementById('rem-urg').value,
+    'upcomingMi:' + document.getElementById('rem-up-mi').value,
+    'urgentMi:' + document.getElementById('rem-urg-mi').value,
+    'mode:' + document.getElementById('rem-mode').value,
+    'recur:' + (document.getElementById('rem-recur').checked ? 'yes' : 'no'),
+    'every:' + document.getElementById('rem-every').value
+  ].join('\n');
   await updateReminder(id, r);
   closeModal();
   toast('Reminder updated');
