@@ -1,6 +1,7 @@
 const CDL_PRETRIP = ['Lights','Tires','Brakes','Steering','Horn','Mirrors','Windshield and wipers','Fuel cap','Coupling','Cargo securement','Emergency equipment','Engine oil and coolant','Air system','Suspension'];
 let cdlAnswers = [];
 let cdlStep = 0;
+let cdlDate = '';
 function inspectionPreset() {
   return `<div class="card mb-4"><label class="form-label">Inspection preset</label><select class="form-select" onchange="startCdl(this.value)"><option value="">Choose a preset</option><option>CDL pre-trip</option></select><div id="inspect-preview"></div></div>`;
 }
@@ -8,6 +9,15 @@ function startCdl(name) {
   if (name !== 'CDL pre-trip') { document.getElementById('inspect-preview').innerHTML = ''; return; }
   cdlAnswers = [];
   cdlStep = 0;
+  cdlDate = new Date().toISOString().slice(0, 10);
+  askCdlDate();
+}
+function askCdlDate() {
+  document.getElementById('inspect-preview').innerHTML = `<p class="text-sm text-slate-400 mt-3">Date</p><h2 class="text-xl font-semibold my-3">Inspection date</h2><input id="cdl-date" type="date" class="form-input" value="${cdlDate}"><button class="btn-primary mt-3" onclick="acceptCdlDate()">Next</button>`;
+}
+function acceptCdlDate() {
+  cdlDate = document.getElementById('cdl-date').value;
+  if (!cdlDate) return toast('Date is required', 'err');
   askCdl();
 }
 function askCdl() {
@@ -29,29 +39,20 @@ async function finishCdl() {
   const asset = currentAsset();
   const odo = Number(document.getElementById('cdl-odo')?.value);
   if (!asset) return toast('Select a vehicle first', 'err');
+  if (!cdlDate) return toast('Date is required', 'err');
   if (!odo) return toast('Odometer is required', 'err');
   const worst = cdlAnswers.some(r => r.result === 'Fail') ? 'Fail' : cdlAnswers.some(r => r.result === 'Needs maintenance') ? 'Needs maintenance' : 'Good';
   const status = worst === 'Fail' ? 'Out of service' : worst === 'Needs maintenance' ? 'Inspection pending' : 'In service';
   asset.odometer = odo;
   asset.status = status;
-  await api('/api/inspections', { method: 'POST', body: JSON.stringify({ asset_id: asset.id, date: new Date().toISOString().slice(0, 10), template: 'CDL pre-trip', result: worst, notes: 'Odometer: ' + odo + '\n' + cdlAnswers.map(r => r.item + ': ' + r.result).join('\n') }) });
+  await api('/api/inspections', { method: 'POST', body: JSON.stringify({ asset_id: asset.id, date: cdlDate, template: 'CDL pre-trip', result: worst, notes: 'Odometer: ' + odo + '\n' + cdlAnswers.map(r => r.item + ': ' + r.result).join('\n') }) });
   await updateAsset(asset.id, asset);
   if (typeof loadAll === 'function') await loadAll();
-  toast(worst + ' · ' + status);
+  toast(worst + ' \u00b7 ' + status);
   showView('dashboard');
 }
-function yellowPending() {
-  document.querySelectorAll('.status-badge, span, div').forEach(el => {
-    if (el.children.length) return;
-    if (/inspection pending/i.test(el.textContent || '')) {
-      el.style.background = '#eab308';
-      el.style.color = '#1c1917';
-    }
-  });
-}
-const _renderCdlOdo = renderInspections;
+const _renderCdlDate = renderInspections;
 renderInspections = function (el) {
-  _renderCdlOdo(el);
+  _renderCdlDate(el);
   if (!document.getElementById('inspect-preview')) el.insertAdjacentHTML('afterbegin', inspectionPreset());
 };
-setInterval(yellowPending, 700);
