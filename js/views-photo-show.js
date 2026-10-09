@@ -34,6 +34,7 @@ async function paintAllTilePhotos() {
     const url = await fileBlob(key);
     if (!url) continue;
     let img = card.querySelector('.tile-photo');
+    if (img && img.dataset.key === key) continue;
     if (!img) {
       img = document.createElement('img');
       img.className = 'tile-photo';
@@ -42,10 +43,13 @@ async function paintAllTilePhotos() {
       card.style.overflow = 'hidden';
       card.prepend(img);
     }
+    img.dataset.key = key;
     img.src = url;
-    img.style.cssText = mode === 'round'
-      ? 'width:40px;height:40px;border-radius:999px;object-fit:cover;position:absolute;top:12px;left:12px;z-index:2'
-      : 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;z-index:0;pointer-events:none';
+    if (mode === 'round') {
+      img.style.cssText = 'width:40px;height:40px;border-radius:999px;object-fit:cover;position:absolute;top:12px;left:12px;z-index:2';
+    } else if (!img.style.position) {
+      img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none';
+    }
   }
 }
 setInterval(paintAllTilePhotos, 2000);
