@@ -32,7 +32,6 @@ function editReminder(id) {
         <label class="form-label">Every months</label><input id="rem-months" type="number" class="form-input" value="${noteVal(notes, 'everyMonths', '')}" placeholder="1">
       </div>
     </div>
-    <p class="text-xs text-slate-400 mt-3">Fill miles, months, or both. Both means whichever comes first. Example: car wash every 2000 miles or every 1 month.</p>
     <button class="btn-primary mt-4" onclick="saveReminderEdit('${id}')">Save</button></div>`);
 }
 async function saveReminderEdit(id) {
