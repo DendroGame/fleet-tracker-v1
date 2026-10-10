@@ -60,6 +60,18 @@ function hideUnusedMeter() {
     if (!hour && isOdo) card.style.display = '';
   });
 }
+const _saveMeter = saveAsset;
+saveAsset = async function (e, id) {
+  const select = e.target.querySelector('[name="calcMode"]');
+  if (select) select.disabled = false;
+  const mode = select?.value === 'hour' ? 'hour' : 'mile';
+  await _saveMeter.apply(this, arguments);
+  const asset = id ? state.assets.find(a => a.id === id) : state.assets[state.assets.length - 1];
+  if (!asset) return;
+  asset.notes = String(asset.notes || '').replace(/\n?__calc__:(mile|hour)/g, '') + '\n__calc__:' + mode;
+  await updateAsset(asset.id, asset);
+  toast(mode === 'hour' ? 'Saved as hours' : 'Saved as miles');
+};
 const _openMeter = openAssetForm;
 openAssetForm = function () {
   _openMeter.apply(this, arguments);
