@@ -6,7 +6,8 @@ function sideForPage() {
   const vehicle = onVehiclePage();
   document.querySelectorAll('nav .nav-btn').forEach(btn => {
     const view = btn.dataset.view;
-    btn.style.display = !vehicle && view !== 'todos' && view !== 'garage' ? 'none' : '';
+    const keep = view === 'todos' || view === 'garage' || view === 'supplies';
+    btn.style.display = !vehicle && !keep ? 'none' : '';
   });
   const settings = document.querySelector('aside .border-t');
   if (!settings) return;
