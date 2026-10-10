@@ -1,5 +1,5 @@
 function tileMode() {
-  return localStorage.getItem('ft_tile_primary') || 'model';
+  return localStorage.getItem('ft_tile_primary') || 'unit';
 }
 function setTileMode(mode) {
   localStorage.setItem('ft_tile_primary', mode);
@@ -9,10 +9,8 @@ function setTileMode(mode) {
 function tileText(a) {
   const model = [a.year, a.make, a.model].filter(Boolean).join(' ') || 'No model';
   const unit = a.unitNumber || 'No unit';
-  if (tileMode() === 'unit') {
-    return { title: unit, sub: model };
-  }
-  return { title: model, sub: unit };
+  if (tileMode() === 'model') return { title: model, sub: unit };
+  return { title: unit, sub: model };
 }
 const _renderGarageTiles = renderGarage;
 renderGarage = function (el) {
@@ -21,11 +19,9 @@ renderGarage = function (el) {
   state.assets.forEach((a, i) => {
     const card = cards[i];
     if (!card) return;
-    const block = card.querySelector('.mt-3');
-    if (!block) return;
     const text = tileText(a);
-    const title = block.querySelector('.font-semibold');
-    const sub = block.querySelector('.text-sm');
+    const title = card.querySelector('.font-semibold');
+    const sub = title?.nextElementSibling;
     if (title) {
       title.textContent = text.title;
       title.className = 'font-bold text-xl';
