@@ -21,7 +21,7 @@ function renderTodos(el) {
       </div>
       <button class="btn-primary" onclick="openTodoForm()">Add task</button>
     </div>
-    <label class="flex gap-2 text-sm mb-4"><input type="checkbox" ${localStorage.getItem('ft_todo_auto')==='1'?'checked':''} onchange="localStorage.setItem('ft_todo_auto', this.checked?'1':'0')"> Automatically add upcoming reminders</label>
+    <p class="text-xs text-slate-400 mb-4">Upcoming reminders are added only when that reminder has Add to to-do turned on.</p>
     ${rows.length ? rows.map(r => `<div class="card mb-2 flex items-center justify-between gap-3 ${r.done?'opacity-50':''}"><div><div class="font-medium">${r.title}</div><div class="text-xs text-slate-400">${r.unit || 'Shop'} · ${r.source || 'Task'}</div></div><button class="btn-secondary text-xs" onclick="toggleTodo('${r.id}')">${r.done?'Undo':'Done'}</button></div>`).join('') : '<p class="text-slate-500">No tasks</p>'}`;
 }
 function openTodoForm() {
@@ -44,16 +44,7 @@ function toggleTodo(id) {
   saveTodos(rows);
   showView('todos');
 }
-function syncUpcomingReminders() {
-  if (localStorage.getItem('ft_todo_auto') !== '1') return;
-  const asset = typeof currentAsset === 'function' ? currentAsset() : null;
-  (state.reminders || []).filter(r => !r.completed && (r.urgency === 'urgent' || /upcoming/i.test(r.notes || ''))).forEach(r => {
-    const rows = todos();
-    if (rows.some(t => t.sourceId === r.id)) return;
-    const owner = (state.assets || []).find(a => a.id === r.assetId);
-    addTodo({ title: r.title, assetId: r.assetId, unit: owner?.unitNumber || '', source: 'Reminder', sourceId: r.id });
-  });
-}
+function syncUpcomingReminders() {}
 async function offerTodoFromInspection(asset, answers) {
   const problems = answers.filter(r => r.result === 'Fail' || r.result === 'Needs maintenance');
   if (!problems.length) return;
@@ -75,7 +66,7 @@ showView = function (name) {
     document.querySelector('[data-view="todos"]')?.classList.add('active');
     document.getElementById('view-title').textContent = 'To do';
     document.getElementById('view-subtitle').textContent = 'Shop list, filter by vehicle';
-    syncUpcomingReminders();
+    if (typeof syncUpcomingReminders === 'function') syncUpcomingReminders();
     renderTodos(document.getElementById('main-content'));
     return;
   }
