@@ -1,4 +1,4 @@
-const VEHICLE_VIEWS = ['dashboard','service','fuel','supplies','inspections','reminders','tools'];
+const VEHICLE_VIEWS = ['dashboard','service','fuel','supplies','inspections','reminders','tools','insurance','taxes','subscriptions'];
 function unitPath(unit, view) {
   const base = '/' + encodeURIComponent(unit || '');
   return view && view !== 'dashboard' ? base + '/' + view : base;
@@ -22,7 +22,7 @@ function readUnitFromUrl() {
   if (!asset) return;
   if (state.currentAssetId !== asset.id) switchAsset(asset.id);
   const view = VEHICLE_VIEWS.includes(parts[1]) ? parts[1] : 'dashboard';
-  const titles = { dashboard: 'Dashboard', service: 'Service', fuel: 'Fuel', supplies: 'Supplies', inspections: 'Inspections', reminders: 'Reminders', tools: 'Tools' };
+  const titles = { dashboard: 'Dashboard', service: 'Service', fuel: 'Fuel', supplies: 'Supplies', inspections: 'Inspections', reminders: 'Reminders', tools: 'Tools', insurance: 'Insurance', taxes: 'Taxes', subscriptions: 'Subscriptions' };
   if (document.getElementById('view-title')?.textContent !== titles[view]) showView(view);
 }
 function blockDuplicateUnit(e, id) {
