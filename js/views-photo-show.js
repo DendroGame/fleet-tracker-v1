@@ -21,7 +21,7 @@ function fileKey(row) { return row?.r2_key || row?.key || row?.path || ''; }
 function keepPhotoBehind(card, img) {
   card.style.position = 'relative';
   card.style.overflow = 'hidden';
-  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;opacity:.75';
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;opacity:.5';
   [...card.children].forEach(child => {
     if (child === img) return;
     child.style.position = 'relative';
