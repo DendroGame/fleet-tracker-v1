@@ -51,9 +51,13 @@ function hideUnusedMeter() {
   if (!asset) return;
   const hour = meterMode(asset) === 'hour';
   document.querySelectorAll('#main-content .card').forEach(card => {
-    const text = (card.textContent || '').toLowerCase();
-    if (hour && /odometer/.test(text) && !/hour/.test(text)) card.style.display = 'none';
-    if (!hour && /\bhours\b/.test(text) && !/odometer/.test(text)) card.style.display = 'none';
+    const label = (card.querySelector('.uppercase, .text-xs')?.textContent || '').toLowerCase();
+    const isOdo = label === 'odometer' || label.startsWith('odometer');
+    const isHours = label === 'hours' || label.startsWith('hours');
+    if (hour && isOdo) card.style.display = 'none';
+    if (hour && isHours) card.style.display = '';
+    if (!hour && isHours) card.style.display = 'none';
+    if (!hour && isOdo) card.style.display = '';
   });
 }
 const _openMeter = openAssetForm;
