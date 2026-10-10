@@ -22,26 +22,6 @@ async function uploadTilePhoto(file, asset) {
   fileIndex.push({ unit_number: asset.unitNumber, category: 'Garage', r2_key: res.key });
   return res.key;
 }
-const _renderR2 = renderGarage;
-renderGarage = async function (el) {
-  _renderR2(el);
-  if (!fileIndex.length) await loadFileIndex();
-  (state.assets || []).forEach((a, i) => {
-    const card = el.querySelectorAll('.card')[i];
-    const row = latestGaragePhoto(a.unitNumber);
-    if (!card || !row) return;
-    const mode = typeof photoModeFor === 'function' ? photoModeFor(a.id) : 'round';
-    const url = API_BASE + '/api/files/' + encodeURIComponent(row.r2_key);
-    if (mode === 'background') {
-      card.style.backgroundImage = `linear-gradient(rgba(15,23,42,.82), rgba(15,23,42,.88)), url('${url}')`;
-      card.style.backgroundSize = 'cover';
-      card.style.backgroundPosition = 'center';
-    } else if (mode === 'round') {
-      const icon = card.querySelector('.text-2xl');
-      if (icon) icon.innerHTML = `<img src="${url}" alt="" class="w-10 h-10 rounded-full object-cover">`;
-    }
-  });
-};
 const _saveR2 = saveAsset;
 saveAsset = async function (e, id) {
   const file = e.target.querySelector('[name="tilePhoto"]')?.files?.[0];
@@ -50,7 +30,9 @@ saveAsset = async function (e, id) {
   if (file && asset) {
     try {
       toast('Uploading picture to R2…');
-      await uploadTilePhoto(file, asset);
+      const key = await uploadTilePhoto(file, asset);
+      asset.notes = String(asset.notes || '').replace(/\n?__pkey__:[^\n]*/g, '') + '\n__pkey__:' + key;
+      await updateAsset(asset.id, asset);
       toast('Picture saved to ' + asset.unitNumber + '/Garage/');
       showView('garage');
     } catch (err) {
