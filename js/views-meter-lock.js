@@ -1,38 +1,45 @@
+const unlockedMeters = new Set();
 function meterMode(asset) {
   return typeof calcMode === 'function' ? calcMode(asset) : 'mile';
 }
 function lockMeterChoice() {
   const form = document.querySelector('#modal-content form');
   const select = form?.querySelector('[name="calcMode"]');
-  if (!select || select.dataset.locked) return;
-  const editing = !!form.querySelector('[name="unitNumber"]')?.value && document.querySelector('#modal-content h2')?.textContent?.includes('Edit');
+  if (!select) return;
+  const unit = form.querySelector('[name="unitNumber"]')?.value;
+  const asset = (state.assets || []).find(a => a.unitNumber === unit);
+  const editing = !!asset;
   if (!editing) {
     select.required = true;
+    select.disabled = false;
     if (!select.querySelector('option[value=""]')) select.insertAdjacentHTML('afterbegin', '<option value="">Choose miles or hours</option>');
-    if (!select.value) select.value = '';
+    return;
+  }
+  if (unlockedMeters.has(asset.id)) {
+    select.disabled = false;
     return;
   }
   select.disabled = true;
-  select.dataset.locked = '1';
   if (form.querySelector('.unlock-meter')) return;
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'unlock-meter btn-secondary text-xs mt-2';
   btn.textContent = 'Change miles or hours';
-  btn.onclick = () => unlockMeter(select);
+  btn.onclick = () => unlockMeter(asset.id);
   select.after(btn);
 }
-function unlockMeter(select) {
-  openModal(`<div class="p-5 space-y-3"><h2 class="font-semibold">Admin password</h2><p class="text-sm text-slate-400">Only an admin can change miles or hours.</p><input id="meter-pass" type="password" class="form-input" placeholder="Admin password"><button class="btn-primary" onclick="checkMeterPass()">Unlock</button></div>`);
-  window._meterSelect = select;
+function unlockMeter(id) {
+  const pass = prompt('Admin password');
+  if (pass === null) return;
+  checkMeterPass(id, pass);
 }
-async function checkMeterPass() {
-  const password = document.getElementById('meter-pass').value;
+async function checkMeterPass(id, password) {
   try {
     const res = await api('/api/login', { method: 'POST', body: JSON.stringify({ name: "Jonathan's Fleet", password }) });
     if (res.role !== 'admin') throw new Error('Admin account required');
-    if (window._meterSelect) window._meterSelect.disabled = false;
-    closeModal();
+    unlockedMeters.add(id);
+    const select = document.querySelector('#modal-content [name="calcMode"]');
+    if (select) select.disabled = false;
     toast('Miles or hours unlocked');
   } catch (err) {
     toast(err.message || 'Blocked', 'err');
