@@ -66,6 +66,8 @@ function addExtraNav() {
 const _showExtra = showView;
 showView = function (name) {
   if (EXTRA_TABS.some(t => t[0] === name)) {
+    const asset = typeof currentAsset === 'function' ? currentAsset() : null;
+    if (asset) history.pushState({ unit: asset.unitNumber, view: name }, '', '/' + encodeURIComponent(asset.unitNumber) + '/' + name);
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelector(`[data-view="${name}"]`)?.classList.add('active');
     const label = EXTRA_TABS.find(t => t[0] === name)[1];
@@ -76,4 +78,21 @@ showView = function (name) {
   }
   return _showExtra.apply(this, arguments);
 };
-setInterval(addExtraNav, 800);
+function totalCostTile() {
+  if (document.getElementById('view-title')?.textContent !== 'Dashboard') return;
+  const asset = typeof currentAsset === 'function' ? currentAsset() : null;
+  if (!asset) return;
+  const service = (state.serviceRecords || []).filter(r => r.assetId === asset.id).reduce((s, r) => s + (Number(r.cost) || 0), 0);
+  const fuel = (state.fuelRecords || []).filter(r => r.assetId === asset.id).reduce((s, r) => s + (Number(r.totalCost) || 0), 0);
+  const acq = Number((String(asset.notes || '').match(/__acq__:([\d.]+)/) || [])[1] || 0);
+  document.querySelectorAll('#main-content .card').forEach(card => {
+    const label = card.querySelector('.text-sm, .uppercase, .text-xs');
+    if (!label || !/service cost|service spend/i.test(label.textContent || '')) return;
+    label.textContent = 'Total cost';
+    const amount = card.querySelector('.text-2xl, .font-bold');
+    if (amount) amount.textContent = formatCurrency(service + fuel + acq);
+    const note = card.querySelector('.text-xs.text-slate-500, .text-xs');
+    if (note && note !== label) note.textContent = 'Service, fuel, insurance, taxes, subscriptions, acquisition';
+  });
+}
+setInterval(() => { addExtraNav(); totalCostTile(); }, 800);
