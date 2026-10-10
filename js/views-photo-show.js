@@ -21,13 +21,7 @@ function fileKey(row) { return row?.r2_key || row?.key || row?.path || ''; }
 function keepPhotoBehind(card, img) {
   card.style.position = 'relative';
   card.style.overflow = 'hidden';
-  img.style.position = 'absolute';
-  img.style.inset = '0';
-  img.style.width = '100%';
-  img.style.height = '100%';
-  img.style.objectFit = 'cover';
-  img.style.zIndex = '0';
-  img.style.pointerEvents = 'none';
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;opacity:.75';
   [...card.children].forEach(child => {
     if (child === img) return;
     child.style.position = 'relative';
@@ -49,6 +43,16 @@ async function paintAllTilePhotos() {
     if (!key || mode === 'off') continue;
     const url = await fileBlob(key);
     if (!url) continue;
+    if (mode === 'round') {
+      const icon = card.querySelector('.text-2xl') || card.querySelector('.tile-round');
+      if (!icon) continue;
+      icon.classList.add('tile-round');
+      icon.innerHTML = `<img src="${url}" alt="" style="width:40px;height:40px;border-radius:999px;object-fit:cover">`;
+      icon.style.position = 'relative';
+      icon.style.zIndex = '2';
+      card.querySelector('.tile-photo')?.remove();
+      continue;
+    }
     let img = card.querySelector('.tile-photo');
     if (!img) {
       img = document.createElement('img');
@@ -57,11 +61,7 @@ async function paintAllTilePhotos() {
       card.prepend(img);
     }
     if (img.dataset.key !== key) { img.dataset.key = key; img.src = url; }
-    if (mode === 'round') {
-      img.style.cssText = 'width:40px;height:40px;border-radius:999px;object-fit:cover;position:absolute;top:12px;left:12px;z-index:2';
-    } else {
-      keepPhotoBehind(card, img);
-    }
+    keepPhotoBehind(card, img);
   }
 }
 setInterval(paintAllTilePhotos, 2000);
