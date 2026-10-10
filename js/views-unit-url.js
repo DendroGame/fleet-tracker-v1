@@ -7,9 +7,16 @@ function goToUnit(asset, view) {
   if (location.pathname !== path) history.pushState({ unit: asset.unitNumber }, '', path);
   if (view) showView(view);
 }
+function goGarage() {
+  if (location.pathname !== '/garage') history.pushState({ view: 'garage' }, '', '/garage');
+}
 function readUnitFromUrl() {
   const unit = decodeURIComponent(location.pathname.replace(/^\//, ''));
   if (!unit || unit === 'index.html') return;
+  if (unit === 'garage') {
+    if (document.getElementById('view-title')?.textContent !== 'Garage') showView('garage');
+    return;
+  }
   const asset = (state.assets || []).find(a => a.unitNumber === unit);
   if (!asset) return;
   if (state.currentAssetId !== asset.id) switchAsset(asset.id);
@@ -36,6 +43,12 @@ switchAsset = function (id) {
   _switchUnit(id);
   const asset = (state.assets || []).find(a => a.id === id);
   if (asset) goToUnit(asset);
+};
+const _showGarage = showView;
+showView = function (name) {
+  const result = _showGarage.apply(this, arguments);
+  if (name === 'garage') goGarage();
+  return result;
 };
 window.addEventListener('popstate', readUnitFromUrl);
 setInterval(readUnitFromUrl, 1500);
