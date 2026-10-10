@@ -1,6 +1,6 @@
 function onVehiclePage() {
-  const path = decodeURIComponent(location.pathname.replace(/^\//, ''));
-  return path && path !== 'garage' && path !== 'index.html' && (state.assets || []).some(a => a.unitNumber === path);
+  const unit = decodeURIComponent(location.pathname).split('/').filter(Boolean)[0];
+  return unit && unit !== 'garage' && unit !== 'index.html' && (state.assets || []).some(a => a.unitNumber === unit);
 }
 function sideForPage() {
   const vehicle = onVehiclePage();
@@ -18,6 +18,7 @@ function sideForPage() {
   settings.querySelectorAll('[data-settings]').forEach(btn => btn.style.display = 'none');
   if (settings.querySelector('.vehicle-side')) return;
   const asset = currentAsset();
+  if (!asset) return;
   const box = document.createElement('div');
   box.className = 'vehicle-side space-y-1';
   box.innerHTML = `
