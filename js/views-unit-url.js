@@ -1,26 +1,29 @@
-function unitPath(unit) {
-  return '/' + encodeURIComponent(unit || '');
+const VEHICLE_VIEWS = ['dashboard','service','fuel','supplies','inspections','reminders','tools'];
+function unitPath(unit, view) {
+  const base = '/' + encodeURIComponent(unit || '');
+  return view && view !== 'dashboard' ? base + '/' + view : base;
 }
 function goToUnit(asset, view) {
   if (!asset?.unitNumber) return;
-  const path = unitPath(asset.unitNumber);
-  if (location.pathname !== path) history.pushState({ unit: asset.unitNumber }, '', path);
-  if (view) showView(view);
+  const path = unitPath(asset.unitNumber, view || 'dashboard');
+  if (location.pathname !== path) history.pushState({ unit: asset.unitNumber, view }, '', path);
 }
 function goGarage() {
   if (location.pathname !== '/garage') history.pushState({ view: 'garage' }, '', '/garage');
 }
 function readUnitFromUrl() {
-  const unit = decodeURIComponent(location.pathname.replace(/^\//, ''));
-  if (!unit || unit === 'index.html') return;
-  if (unit === 'garage') {
+  const parts = decodeURIComponent(location.pathname).split('/').filter(Boolean);
+  if (!parts.length || parts[0] === 'index.html') return;
+  if (parts[0] === 'garage') {
     if (document.getElementById('view-title')?.textContent !== 'Garage') showView('garage');
     return;
   }
-  const asset = (state.assets || []).find(a => a.unitNumber === unit);
+  const asset = (state.assets || []).find(a => a.unitNumber === parts[0]);
   if (!asset) return;
   if (state.currentAssetId !== asset.id) switchAsset(asset.id);
-  if (document.getElementById('view-title')?.textContent === 'Garage') showView('dashboard');
+  const view = VEHICLE_VIEWS.includes(parts[1]) ? parts[1] : 'dashboard';
+  const titles = { dashboard: 'Dashboard', service: 'Service', fuel: 'Fuel', supplies: 'Supplies', inspections: 'Inspections', reminders: 'Reminders', tools: 'Tools' };
+  if (document.getElementById('view-title')?.textContent !== titles[view]) showView(view);
 }
 function blockDuplicateUnit(e, id) {
   const unit = e.target.querySelector('[name="unitNumber"]')?.value?.trim();
@@ -42,12 +45,16 @@ const _switchUnit = switchAsset;
 switchAsset = function (id) {
   _switchUnit(id);
   const asset = (state.assets || []).find(a => a.id === id);
-  if (asset) goToUnit(asset);
+  if (asset && !location.pathname.startsWith('/' + encodeURIComponent(asset.unitNumber))) goToUnit(asset, 'dashboard');
 };
-const _showGarage = showView;
+const _showPath = showView;
 showView = function (name) {
-  const result = _showGarage.apply(this, arguments);
+  const result = _showPath.apply(this, arguments);
   if (name === 'garage') goGarage();
+  else if (VEHICLE_VIEWS.includes(name)) {
+    const asset = typeof currentAsset === 'function' ? currentAsset() : null;
+    if (asset) goToUnit(asset, name);
+  }
   return result;
 };
 window.addEventListener('popstate', readUnitFromUrl);
