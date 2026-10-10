@@ -13,7 +13,7 @@ function nameSetting() {
   if (!(title === 'General' || (title === 'Settings' && /general/i.test(main.textContent || '')))) return;
   const box = document.createElement('div');
   box.className = 'name-mode card mt-4 space-y-2';
-  box.innerHTML = `<h2 class="font-semibold">Fleet names</h2><p class="text-xs text-slate-400">Applies to the whole fleet, tiles, and buttons.</p><label class="flex gap-2 text-sm"><input type="radio" name="nameMode" value="unit" ${nameMode()==='unit'?'checked':''}> Unit number first</label><label class="flex gap-2 text-sm"><input type="radio" name="nameMode" value="model" ${nameMode()==='model'?'checked':''}> Year / make / model first</label><button class="btn-primary" onclick="saveNameMode()">Save</button>`;
+  box.innerHTML = `<h2 class="font-semibold">Fleet names</h2><p class="text-xs text-slate-400">Applies to every vehicle, tile, and button.</p><label class="flex gap-2 text-sm"><input type="radio" name="nameMode" value="unit" ${nameMode()==='unit'?'checked':''}> Unit number first</label><label class="flex gap-2 text-sm"><input type="radio" name="nameMode" value="model" ${nameMode()==='model'?'checked':''}> Year / make / model first</label><button class="btn-primary" onclick="saveNameMode()">Save</button>`;
   main.appendChild(box);
 }
 function saveNameMode() {
@@ -24,24 +24,31 @@ function saveNameMode() {
   showView('garage');
 }
 function applyFleetNames() {
-  const asset = typeof currentAsset === 'function' ? currentAsset() : null;
-  if (!asset) return;
-  const text = vehicleName(asset);
-  document.querySelectorAll('h1, h2, button, .font-semibold').forEach(el => {
-    if (el.children.length) return;
-    if (el.textContent === asset.unitNumber) el.textContent = text.title;
-    if (el.textContent === asset.unitNumber + ' Settings') el.textContent = text.title + ' Settings';
-    if (el.textContent === asset.unitNumber + ' settings') el.textContent = text.title + ' settings';
+  const assets = state.assets || [];
+  document.querySelectorAll('#main-content .card').forEach((card, i) => {
+    const asset = assets[i] || assets.find(a => card.textContent.includes(a.unitNumber));
+    if (!asset) return;
+    const text = vehicleName(asset);
+    const title = card.querySelector('.font-semibold, .font-bold, .font-medium');
+    const sub = title?.parentElement?.querySelector('.text-xs');
+    if (title && (title.textContent.trim() === asset.unitNumber || title.textContent.trim() === text.title || title.textContent.trim() === text.sub)) {
+      title.textContent = text.title;
+      title.className = 'font-bold text-xl';
+    }
+    if (sub) sub.textContent = text.sub;
+    card.querySelectorAll('button, h2, .font-semibold').forEach(el => {
+      if (el.children.length) return;
+      if (el.textContent === asset.unitNumber + ' Settings') el.textContent = text.title + ' Settings';
+    });
   });
-  const heading = document.querySelector('#main-content h2');
-  if (heading && heading.textContent.trim() === asset.unitNumber) {
-    heading.textContent = text.title;
-    if (!heading.nextElementSibling?.classList.contains('name-sub')) {
-      const sub = document.createElement('p');
-      sub.className = 'name-sub text-xs text-slate-400';
-      sub.textContent = text.sub;
-      heading.after(sub);
-    } else heading.nextElementSibling.textContent = text.sub;
-  }
+  document.querySelectorAll('button, h1, h2').forEach(el => {
+    if (el.children.length) return;
+    assets.forEach(asset => {
+      const text = vehicleName(asset);
+      if (el.textContent === asset.unitNumber) el.textContent = text.title;
+      if (el.textContent === asset.unitNumber + ' Settings') el.textContent = text.title + ' Settings';
+      if (el.textContent === asset.unitNumber + ' settings') el.textContent = text.title + ' settings';
+    });
+  });
 }
 setInterval(() => { nameSetting(); applyFleetNames(); }, 700);
