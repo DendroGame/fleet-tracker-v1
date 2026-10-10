@@ -1,18 +1,31 @@
+async function compressPhoto(file) {
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = URL.createObjectURL(file);
+  });
+  const max = 800;
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.6));
+  return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+}
 let fileIndex = [];
 async function loadFileIndex() {
   try { fileIndex = await api('/api/files'); } catch (e) { fileIndex = []; }
 }
-function latestGaragePhoto(unit) {
-  const rows = fileIndex.filter(f => f.unit_number === unit && f.category === 'Garage');
-  return rows[rows.length - 1] || null;
-}
 async function uploadTilePhoto(file, asset) {
-  const data = await fileToBase64(file);
+  const small = await compressPhoto(file);
+  const data = await fileToBase64(small);
   const res = await api('/api/files', {
     method: 'POST',
     body: JSON.stringify({
-      filename: file.name,
-      contentType: file.type || 'image/jpeg',
+      filename: small.name,
+      contentType: 'image/jpeg',
       data,
       unit_number: asset.unitNumber || 'UNASSIGNED',
       category: 'Garage',
@@ -29,7 +42,7 @@ saveAsset = async function (e, id) {
   const asset = id ? state.assets.find(a => a.id === id) : state.assets[state.assets.length - 1];
   if (file && asset) {
     try {
-      toast('Uploading picture to R2…');
+      toast('Compressing and uploading picture…');
       const key = await uploadTilePhoto(file, asset);
       asset.notes = String(asset.notes || '').replace(/\n?__pkey__:[^\n]*/g, '') + '\n__pkey__:' + key;
       await updateAsset(asset.id, asset);
